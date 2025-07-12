@@ -85,14 +85,26 @@ cleanup_ports() {
 
 # Main menu
 show_menu() {
+    # Check server status
+    local frontend_status="${RED}❌ Stopped${NC}"
+    local backend_status="${RED}❌ Stopped${NC}"
+    
+    if lsof -i :8080 >/dev/null 2>&1; then
+        frontend_status="${GREEN}✅ Running${NC}"
+    fi
+    
+    if lsof -i :3000 >/dev/null 2>&1; then
+        backend_status="${GREEN}✅ Running${NC}"
+    fi
+    
     echo -e "\n${GREEN}🎮 Choose your game mode:${NC}\n"
     echo -e "${WHITE}1)${NC} ${GREEN}🚀 Full Game Experience${NC}"
     echo -e "   Complete zkLabubuio game with real SP1 zero-knowledge proofs"
-    echo -e "   ${BLUE}Frontend:${NC} http://localhost:8080 | ${BLUE}Backend:${NC} http://localhost:3000\n"
+    echo -e "   ${BLUE}Frontend:${NC} http://localhost:8080 ($frontend_status) | ${BLUE}Backend:${NC} http://localhost:3000 ($backend_status)\n"
     
     echo -e "${WHITE}2)${NC} ${YELLOW}🎯 Frontend Only (Demo Mode)${NC}"
     echo -e "   Game frontend with simulated proofs - perfect for demos"
-    echo -e "   ${BLUE}Frontend:${NC} http://localhost:8080\n"
+    echo -e "   ${BLUE}Frontend:${NC} http://localhost:8080 ($frontend_status)\n"
     
     echo -e "${WHITE}3)${NC} ${PURPLE}🧪 Test SP1 System${NC}"
     echo -e "   Test SP1 zero-knowledge proof system with sample data\n"
@@ -103,7 +115,10 @@ show_menu() {
     echo -e "${WHITE}5)${NC} ${BLUE}🔧 Setup & Install Dependencies${NC}"
     echo -e "   Install all required dependencies for the project\n"
     
-    echo -e "${WHITE}6)${NC} ${RED}❌ Exit${NC}\n"
+    echo -e "${WHITE}6)${NC} ${YELLOW}🛑 Stop All Running Servers${NC}"
+    echo -e "   Stop any running frontend/backend servers\n"
+    
+    echo -e "${WHITE}7)${NC} ${RED}❌ Exit${NC}\n"
 }
 
 # Start full game experience
@@ -119,13 +134,55 @@ start_full_game() {
     echo -e "${CYAN}Starting servers...${NC}"
     npm run dev >/dev/null 2>&1 &
     
-    echo -e "${GREEN}✅ Servers started successfully!${NC}"
-    echo -e "${CYAN}🎮 Open your browser to http://localhost:8080 to play the game${NC}"
-    echo -e "${YELLOW}💡 SP1 proof details will be shown in the game interface when you generate proofs${NC}"
+    # Wait a bit for servers to start
+    sleep 3
     
-    # Keep script running
-    echo -e "\n${BLUE}Press Ctrl+C to stop the servers${NC}"
-    wait
+    # Check if servers are running
+    if lsof -i :8080 >/dev/null 2>&1 && lsof -i :3000 >/dev/null 2>&1; then
+        echo -e "${GREEN}✅ Servers started successfully!${NC}"
+        echo -e "${CYAN}🎮 Open your browser to http://localhost:8080 to play the game${NC}"
+        echo -e "${YELLOW}💡 SP1 proof details will be shown in the game interface when you generate proofs${NC}"
+        
+        # Keep script running with better feedback
+        echo -e "\n${BLUE}Servers are running successfully!${NC}"
+        echo -e "${PURPLE}Choose an option:${NC}"
+        echo -e "${WHITE}1)${NC} Return to menu (servers continue running)"
+        echo -e "${WHITE}2)${NC} Stop servers and return to menu"
+        echo -e "${WHITE}3)${NC} Keep servers running and wait (Press Ctrl+C to stop)"
+        echo -e ""
+        echo -n -e "${WHITE}Enter your choice (1-3): ${NC}"
+        read -n 1 server_choice
+        echo
+        
+        case $server_choice in
+            1)
+                echo -e "\n${YELLOW}Returning to menu... Servers will continue running in background${NC}"
+                echo -e "${CYAN}💡 Frontend: http://localhost:8080 | Backend: http://localhost:3000${NC}"
+                sleep 1
+                return
+                ;;
+            2)
+                echo -e "\n${YELLOW}Stopping servers...${NC}"
+                cleanup_ports
+                echo -e "${GREEN}✅ Servers stopped${NC}"
+                sleep 1
+                return
+                ;;
+            3)
+                echo -e "\n${BLUE}Servers running... Press Ctrl+C to stop them${NC}"
+                wait
+                ;;
+            *)
+                echo -e "\n${YELLOW}Invalid choice. Returning to menu... Servers will continue running in background${NC}"
+                sleep 1
+                return
+                ;;
+        esac
+    else
+        echo -e "${RED}❌ Failed to start servers. Please check for errors and try again.${NC}"
+        echo -e "${BLUE}Press any key to return to menu...${NC}"
+        read -n 1
+    fi
 }
 
 # Start frontend only
@@ -139,12 +196,54 @@ start_frontend_only() {
     echo -e "${CYAN}Starting frontend...${NC}"
     npm run dev:frontend-only >/dev/null 2>&1 &
     
-    echo -e "${GREEN}✅ Frontend started successfully!${NC}"
-    echo -e "${CYAN}🎮 Open your browser to http://localhost:8080 to play the game${NC}"
+    # Wait a bit for frontend to start
+    sleep 3
     
-    # Keep script running
-    echo -e "\n${BLUE}Press Ctrl+C to stop the frontend${NC}"
-    wait
+    # Check if frontend is running
+    if lsof -i :8080 >/dev/null 2>&1; then
+        echo -e "${GREEN}✅ Frontend started successfully!${NC}"
+        echo -e "${CYAN}🎮 Open your browser to http://localhost:8080 to play the game${NC}"
+        
+        # Keep script running with better feedback
+        echo -e "\n${BLUE}Frontend is running successfully!${NC}"
+        echo -e "${PURPLE}Choose an option:${NC}"
+        echo -e "${WHITE}1)${NC} Return to menu (frontend continues running)"
+        echo -e "${WHITE}2)${NC} Stop frontend and return to menu"
+        echo -e "${WHITE}3)${NC} Keep frontend running and wait (Press Ctrl+C to stop)"
+        echo -e ""
+        echo -n -e "${WHITE}Enter your choice (1-3): ${NC}"
+        read -n 1 frontend_choice
+        echo
+        
+        case $frontend_choice in
+            1)
+                echo -e "\n${YELLOW}Returning to menu... Frontend will continue running in background${NC}"
+                echo -e "${CYAN}💡 Frontend: http://localhost:8080${NC}"
+                sleep 1
+                return
+                ;;
+            2)
+                echo -e "\n${YELLOW}Stopping frontend...${NC}"
+                kill_port 8080
+                echo -e "${GREEN}✅ Frontend stopped${NC}"
+                sleep 1
+                return
+                ;;
+            3)
+                echo -e "\n${BLUE}Frontend running... Press Ctrl+C to stop it${NC}"
+                wait
+                ;;
+            *)
+                echo -e "\n${YELLOW}Invalid choice. Returning to menu... Frontend will continue running in background${NC}"
+                sleep 1
+                return
+                ;;
+        esac
+    else
+        echo -e "${RED}❌ Failed to start frontend. Please check for errors and try again.${NC}"
+        echo -e "${BLUE}Press any key to return to menu...${NC}"
+        read -n 1
+    fi
 }
 
 # Test SP1 system
@@ -167,6 +266,35 @@ generate_real_proof() {
     npm run prove:sp1
     
     echo -e "\n${GREEN}✅ Real proof generation completed${NC}"
+    echo -e "${BLUE}Press any key to return to menu...${NC}"
+    read -n 1
+}
+
+# Stop all servers
+stop_all_servers() {
+    echo -e "${YELLOW}🛑 Stopping all running servers...${NC}\n"
+    
+    local frontend_running=false
+    local backend_running=false
+    
+    if lsof -i :8080 >/dev/null 2>&1; then
+        frontend_running=true
+        echo -e "${CYAN}Stopping frontend server (port 8080)...${NC}"
+        kill_port 8080
+    fi
+    
+    if lsof -i :3000 >/dev/null 2>&1; then
+        backend_running=true
+        echo -e "${CYAN}Stopping backend server (port 3000)...${NC}"
+        kill_port 3000
+    fi
+    
+    if [ "$frontend_running" = true ] || [ "$backend_running" = true ]; then
+        echo -e "\n${GREEN}✅ All servers stopped successfully!${NC}"
+    else
+        echo -e "${BLUE}💡 No servers were running.${NC}"
+    fi
+    
     echo -e "${BLUE}Press any key to return to menu...${NC}"
     read -n 1
 }
@@ -198,7 +326,7 @@ main() {
     
     while true; do
         show_menu
-        echo -n -e "${WHITE}Please enter your choice (1-6): ${NC}"
+        echo -n -e "${WHITE}Please enter your choice (1-7): ${NC}"
         read -n 1 choice
         echo
         
@@ -219,11 +347,14 @@ main() {
                 setup_dependencies
                 ;;
             6)
+                stop_all_servers
+                ;;
+            7)
                 echo -e "\n${RED}👋 Goodbye!${NC}"
                 exit 0
                 ;;
             *)
-                echo -e "\n${RED}❌ Invalid choice. Please select 1-6.${NC}"
+                echo -e "\n${RED}❌ Invalid choice. Please select 1-7.${NC}"
                 sleep 2
                 clear
                 ;;
