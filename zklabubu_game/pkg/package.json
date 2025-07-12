@@ -1,0 +1,20 @@
+{
+  "name": "zklabubuio_game",
+  "type": "module",
+  "collaborators": [
+    "Your Name <your.email@example.com>"
+  ],
+  "description": "A simple Labubu game with SP1 ZK Proof integration",
+  "version": "0.1.0",
+  "license": "MIT/Apache-2.0",
+  "files": [
+    "zklabubuio_game_bg.wasm",
+    "zklabubuio_game.js",
+    "zklabubuio_game.d.ts"
+  ],
+  "main": "zklabubuio_game.js",
+  "types": "zklabubuio_game.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

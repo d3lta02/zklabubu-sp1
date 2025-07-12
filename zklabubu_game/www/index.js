@@ -242,14 +242,34 @@ function toggleSound() {
       console.log("Sounds enabled");
     } else {
       soundBtn.textContent = '🔇';
+      // Stop all sounds when disabled
       backgroundMusic.pause();
-      console.log("Sounds disabled");
+      
+      // Stop all game sounds
+      if (eggSound) {
+        eggSound.pause();
+        eggSound.currentTime = 0;
+      }
+      if (rockSound) {
+        rockSound.pause();
+        rockSound.currentTime = 0;
+      }
+      if (shieldHitSound) {
+        shieldHitSound.pause();
+        shieldHitSound.currentTime = 0;
+      }
+      if (buttonSound) {
+        buttonSound.pause();
+        buttonSound.currentTime = 0;
+      }
+      
+      console.log("All sounds disabled");
     }
   } else {
     console.warn("Global sound button not found in DOM");
   }
   
-  // Play button sound
+  // Play button sound only if enabled
   if (soundEnabled && buttonSound) {
     buttonSound.currentTime = 0;
     buttonSound.play().catch(error => {

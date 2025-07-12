@@ -1,0 +1,31 @@
+/* tslint:disable */
+/* eslint-disable */
+export const memory: WebAssembly.Memory;
+export const __wbg_gamemanager_free: (a: number, b: number) => void;
+export const gamemanager_new: (a: any, b: any, c: any, d: any, e: any, f: any, g: any, h: any, i: any, j: any, k: any, l: any, m: any, n: any, o: any) => number;
+export const gamemanager_handle_key_press: (a: number, b: any) => void;
+export const gamemanager_start: (a: number) => void;
+export const gamemanager_stop: (a: number) => void;
+export const gamemanager_restart: (a: number) => void;
+export const gamemanager_update: (a: number, b: number) => number;
+export const gamemanager_get_score: (a: number) => number;
+export const gamemanager_get_lives: (a: number) => number;
+export const gamemanager_is_game_over: (a: number) => number;
+export const gamemanager_get_game_state: (a: number) => number;
+export const gamemanager_set_sound_enabled: (a: number, b: number) => void;
+export const gamemanager_get_yellow_eggs_count: (a: number) => number;
+export const gamemanager_get_blue_eggs_count: (a: number) => number;
+export const gamemanager_get_purple_eggs_count: (a: number) => number;
+export const gamemanager_get_game_time: (a: number) => number;
+export const gamemanager_show_sp1_proof_interface: (a: number) => [number, number];
+export const gamemanager_hide_sp1_proof_interface: (a: number) => [number, number];
+export const log_to_proof_area: (a: number, b: number) => void;
+export const show_proof_result: (a: number, b: number, c: number) => void;
+export const __wbindgen_exn_store: (a: number) => void;
+export const __externref_table_alloc: () => number;
+export const __wbindgen_export_2: WebAssembly.Table;
+export const __wbindgen_free: (a: number, b: number, c: number) => void;
+export const __wbindgen_malloc: (a: number, b: number) => number;
+export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+export const __externref_table_dealloc: (a: number) => void;
+export const __wbindgen_start: () => void;
