@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>zkLabubuio Game</title>
+  <!-- Preload critical images -->
+  <link rel="preload" href="assets/images/bg_main.png" as="image">
+  <link rel="preload" href="assets/images/bg_game.png" as="image">
+  <link rel="preload" href="assets/images/bg_gameover.png" as="image">
+  
+  <link rel="stylesheet" href="style.css">
+  
+  <style>
+    /* Inline critical CSS for loading screen */
+    #initial-loading-screen {
+      background-image: url('assets/images/bg_main.png');
+      background-size: cover;
+      background-position: center;
+      background-color: #0a3d62;
+    }
+    
+    .loading-container {
+      width: 80%;
+      max-width: 400px;
+      margin-top: 20px;
+    }
+    
+    .loading-bar {
+      height: 20px;
+      background-color: rgba(30, 55, 153, 0.7);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    #loading-progress {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #fe22be 0%, #9d27b0 100%);
+      transition: width 0.3s ease-in-out;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Global Sound Button -->
+  <button id="global-sound-btn" class="global-sound-btn">🔊</button>
+  
+  <div class="container">
+    <!-- Main Menu -->
+    <div id="main-menu" class="screen">
+      <div class="button-container centered">
+        <button id="play-blue-btn" class="game-button blue-team-btn">Play Blue zkLabubu</button>
+        <button id="play-pink-btn" class="game-button pink-team-btn">Play Pink zkLabubu</button>
+        <button id="how-to-play-btn" class="game-button">How to Play</button>
+      </div>
+    </div>
+    
+
+
+    <!-- How to Play Screen -->
+    <div id="how-to-play" class="screen">
+      <h1>How to Play</h1>
+      <div class="instructions">
+        <p>Move your Labubu character using left/right arrow keys or A/D keys.</p>
+        <p>Collect falling eggs to gain points:</p>
+        <ul>
+          <li>Yellow Egg: 5 points (45% probability)</li>
+          <li>Blue Egg: 10 points (20% probability)</li>
+          <li>Purple Egg: 20 points (10% probability)</li>
+        </ul>
+        <p>Avoid falling rocks! Each collision costs 1 life.</p>
+        <p>Every 100 points the game gets harder and items fall faster.</p>
+        <p>Every 100 points a random power-up will drop:</p>
+        <ul>
+          <li>Shield: 10 seconds of protection from rocks</li>
+          <li>2x Points: 10 seconds of double points</li>
+          <li>Extra Life: Adds 1 life (maximum 5)</li>
+          <li>Slowdown: Appears after 400 points, reduces game speed for 10 seconds</li>
+        </ul>
+        <p><strong>SP1 Zero-Knowledge Proof:</strong> Use the "Prove" button at the end of the game to verify your score.</p>
+      </div>
+      <button id="back-to-menu-btn" class="game-button">Back to Main Menu</button>
+    </div>
+    
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+      <div class="game-info">
+        <div class="score-lives">
+          <span id="score">Score: 0</span>
+          <span id="lives">Lives: 3</span>
+          <span id="game-stars">Eggs: 🟡0 🟠0 🟣0</span>
+        </div>
+        <div>
+          <button id="pause-game-btn" class="icon-button">⏸️</button>
+        </div>
+      </div>
+      <canvas id="game-canvas" width="1280" height="640"></canvas>
+      
+      <!-- Pause Menu -->
+      <div id="pause-menu" class="pause-menu hidden">
+        <h2>Game Paused</h2>
+        <div class="button-container pause-buttons">
+          <button id="resume-game-btn" class="game-button">Resume Game</button>
+          <button id="restart-pause-btn" class="game-button">Restart</button>
+          <button id="home-pause-btn" class="game-button">Main Menu</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Game Over Screen -->
+    <div id="game-over" class="screen">
+      <h1>Game Over!</h1>
+      <p id="final-score">Your Score: 0</p>
+      <p id="final-stats">Eggs Collected: 🟡0 🟠0 🟣0</p>
+      <div class="button-container">
+        <button id="home-btn" class="game-button">Home</button>
+        <button id="share-btn" class="game-button">Share</button>
+        <button id="play-again-btn" class="game-button">Play Again</button>
+        <button id="prove-btn" class="game-button sp1-button">
+          Prove
+        </button>
+      </div>
+    </div>
+    
+    <!-- Loading Screen -->
+    <div id="initial-loading-screen" class="screen active" style="background-image: url('assets/images/bg_main.png'); background-size: cover; background-position: center;">
+      <h1>Loading zkLabubuio Game...</h1>
+      <div class="loading-container">
+        <div class="loading-bar">
+          <div id="loading-progress" style="width: 5%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preloaded images -->
+  <div class="preload-images" style="display: none;">
+    <img id="labubu-blue-img" src="assets/images/labubu_blue.png" alt="Blue Labubu" loading="eager">
+    <img id="labubu-pink-img" src="assets/images/labubu_pink.png" alt="Pink Labubu" loading="eager">
+    <img id="labubu-blue-shield-img" src="assets/images/labubu_blue_shield.png" alt="Blue Labubu with Shield" loading="eager">
+    <img id="labubu-pink-shield-img" src="assets/images/labubu_pink_shield.png" alt="Pink Labubu with Shield" loading="eager">
+    <img id="labubu-blue-double-img" src="assets/images/labubu_blue_double.png" alt="2X Blue Labubu" loading="eager">
+    <img id="labubu-pink-double-img" src="assets/images/labubu_pink_double.png" alt="2X Pink Labubu" loading="eager">
+    <img id="yellow-star-img" src="assets/images/yellow_egg.png" alt="Yellow Egg" loading="eager">
+    <img id="pink-star-img" src="assets/images/pink_egg.png" alt="Pink Egg" loading="eager">
+    <img id="purple-star-img" src="assets/images/purple_egg.png" alt="Purple Egg" loading="eager">
+    <img id="rock-img" src="assets/images/rock.png" alt="Rock" loading="eager">
+    <img id="shield-img" src="assets/images/shield.png" alt="Shield" loading="eager">
+    <img id="slowdown-img" src="assets/images/slowdown.png" alt="Slowdown" loading="eager">
+    <img id="double-points-img" src="assets/images/double_points.png" alt="2x Points" loading="eager">
+    <img id="extra-life-img" src="assets/images/extra_life.png" alt="Extra Life" loading="eager">
+    <img id="bg-main-img" src="assets/images/bg_main.png" alt="Main Menu Background" loading="eager">
+    <img id="bg-game-img" src="assets/images/bg_game.png" alt="Game Background" loading="eager">
+    <img id="bg-gameover-img" src="assets/images/bg_gameover.png" alt="Game Over Background" loading="eager">
+  </div>
+  
+  <!-- Preloaded sounds -->
+  <div class="preload-sounds" style="display: none;">
+    <audio id="star-sound" src="assets/sounds/star.mp3" preload="auto"></audio>
+    <audio id="rock-sound" src="assets/sounds/rock.mp3" preload="auto"></audio>
+    <audio id="shield-hit-sound" src="assets/sounds/shield_hit.mp3" preload="auto"></audio>
+    <audio id="button-sound" src="assets/sounds/button.mp3" preload="auto"></audio>
+    <audio id="background-music" src="assets/sounds/bgmusic.mp3" preload="auto" loop></audio>
+  </div>
+
+  <!-- SP1 Bridge JS -->
+  <script src="./sp1-bridge.js"></script>
+  
+  <!-- Main JS -->
+  <script src="./index.js"></script>
+  
+  <!-- Loading progress animation -->
+  <script>
+    // Show initial loading progress
+    let progress = 5;
+    const loadingBar = document.getElementById('loading-progress');
+    const progressInterval = setInterval(() => {
+      progress += 1;
+      if (progress > 40) clearInterval(progressInterval);
+      loadingBar.style.width = progress + '%';
+    }, 100);
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "buildCommand": "cd zklabubu_game/www && npm run build",
+  "outputDirectory": "zklabubu_game/www/dist",
+  "installCommand": "npm install && cd zklabubu_game && npm install && cd www && npm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "env": {
+    "FORCE_SIMULATION": "true"
+  },
+  "github": {
+    "silent": true
+  }
+}

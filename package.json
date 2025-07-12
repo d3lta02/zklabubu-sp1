@@ -1,0 +1,46 @@
+{
+  "name": "zklabubuio-game-sp1",
+  "version": "0.1.0",
+  "description": "zkLabubuio Game with SP1 zero-knowledge proof integration",
+  "main": "index.js",
+  "scripts": {
+    "quick-start": "./run-zklabubuio.sh",
+    "sp1-cli": "node -e \"console.log('\\n🎮 zkLabubuio Game SP1 CLI\\n'); console.log('Available commands:'); console.log('  npm run dev              - Start development server'); console.log('  npm run build            - Build for production'); console.log('  npm run test:sp1         - Test SP1 proof system'); console.log('  npm run prove:sp1        - Generate SP1 proof'); console.log('  npm run install:sp1      - Install SP1 toolchain'); console.log('\\n🚀 Quick start: npm run dev\\n');\"",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
+    "dev:frontend": "cd zklabubu_game && npm run build:dev && cd www && npm start",
+    "dev:frontend-only": "cd zklabubu_game && npm run build:dev && cd www && npm start",
+    "dev:backend": "cd backend && npm start",
+    "build": "npm run build:wasm && npm run build:frontend",
+    "build:wasm": "cd zklabubu_game && npm run build",
+    "build:frontend": "cd zklabubu_game/www && npm run build",
+    "build:vercel": "npm run setup:vercel && npm run build:wasm && npm run build:frontend",
+    "setup:vercel": "cd zklabubu_game && npm install && cd www && npm install",
+    "setup:github": "echo '🔧 Setting up zkLabubuio Game for GitHub users...' && npm install && cd zklabubu_game && npm install && cd www && npm install && echo '✅ Setup complete! Run: npm run dev'",
+    "test:sp1": "cd zklabubu_proof/script && cargo run --bin prove --release -- --execute --yellow-eggs 5 --blue-eggs 3 --purple-eggs 2 --score 95 --game-time 60 --lives 3",
+    "prove:sp1": "cd zklabubu_proof/script && cargo run --bin prove --release -- --prove --yellow-eggs 5 --blue-eggs 3 --purple-eggs 2 --score 95 --game-time 60 --lives 3",
+    "install:sp1": "curl -L https://sp1up.succinct.xyz | bash && export PATH=\"$HOME/.sp1/bin:$PATH\" && sp1up"
+  },
+  "keywords": [
+    "game",
+    "zklabubuio",
+    "labubu",
+    "zero-knowledge",
+    "sp1",
+    "wasm",
+    "rust",
+    "proof"
+  ],
+  "author": "zkLabubuio Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/d3lta02/zklabubuio-game.git"
+  },
+  "homepage": "https://github.com/d3lta02/zklabubuio-game"
+} 

@@ -1,0 +1,4 @@
+# crab_sp1/crab_proof/rust-toolchain.toml
+[toolchain]
+channel = "succinct"
+components = ["rustfmt", "rust-src"]

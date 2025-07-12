@@ -1,0 +1,19 @@
+{
+  "name": "zklabubuio-game-wasm",
+  "version": "0.1.0",
+  "description": "zkLabubuio Game WASM Package",
+  "main": "pkg/zklabubuio_game.js",
+  "scripts": {
+    "build": "wasm-pack build --target web --out-dir pkg",
+    "build:dev": "wasm-pack build --target web --out-dir pkg --dev",
+    "build:release": "wasm-pack build --target web --out-dir pkg --release"
+  },
+  "keywords": [
+    "rust",
+    "wasm",
+    "webassembly",
+    "game"
+  ],
+  "author": "zkLabubuio Team",
+  "license": "MIT"
+} 

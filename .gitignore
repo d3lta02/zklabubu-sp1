@@ -1,0 +1,23 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+**/package-lock.json
+
+# Build outputs
+# dist/
+# **/dist/
+
+# Rust/Cargo build files
+target/
+Cargo.lock
+**/*.rs.bk
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local

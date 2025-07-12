@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "zklabubu_game",
+    "zklabubu_proof/program",
+    "zklabubu_proof/lib",
+    "zklabubu_proof/script"
+]
+
+resolver = "2"

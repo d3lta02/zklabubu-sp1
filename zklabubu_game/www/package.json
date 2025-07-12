@@ -1,0 +1,28 @@
+{
+  "name": "zklabubuio-game-sp1",
+  "version": "0.1.0",
+  "description": "zkLabubuio Game with SP1 Integration",
+  "main": "index.js",
+  "scripts": {
+    "build": "NODE_ENV=production webpack --config webpack.config.js",
+    "build:dev": "webpack --config webpack.config.js",
+    "start": "webpack-dev-server"
+  },
+  "keywords": [
+    "rust",
+    "wasm",
+    "game",
+    "webassembly",
+    "sp1",
+    "zkp"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "copy-webpack-plugin": "^10.2.4",
+    "@wasm-tool/wasm-pack-plugin": "^1.6.0",
+    "webpack": "^5.70.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.7.4"
+  }
+}
