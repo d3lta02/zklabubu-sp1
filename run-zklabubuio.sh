@@ -42,8 +42,37 @@ kill_port() {
     fi
 }
 
-# Silent dependency check
-check_dependencies() {
+# Check basic system requirements
+check_basic_dependencies() {
+    local missing=0
+    
+    if ! command_exists node; then
+        echo -e "${RED}❌ Node.js is not installed${NC}"
+        echo -e "${YELLOW}   Please install Node.js from https://nodejs.org${NC}"
+        missing=1
+    fi
+    
+    if ! command_exists npm; then
+        echo -e "${RED}❌ npm is not installed${NC}"
+        echo -e "${YELLOW}   npm should come with Node.js installation${NC}"
+        missing=1
+    fi
+    
+    if ! command_exists rustc; then
+        echo -e "${RED}❌ Rust is not installed${NC}"
+        echo -e "${YELLOW}   Please install Rust from https://rustup.rs${NC}"
+        missing=1
+    fi
+    
+    if [ $missing -eq 1 ]; then
+        echo -e "\n${RED}Please install the missing basic dependencies first.${NC}"
+        echo -e "${CYAN}After installing them, Option 1 will automatically handle the rest!${NC}"
+        exit 1
+    fi
+}
+
+# Check all dependencies (for other options)
+check_all_dependencies() {
     local missing=0
     
     if ! command_exists node; then
@@ -73,6 +102,7 @@ check_dependencies() {
     
     if [ $missing -eq 1 ]; then
         echo -e "${RED}Please install missing dependencies first${NC}"
+        echo -e "${YELLOW}You can use Option 1 for automatic setup or Option 5 for manual setup${NC}"
         exit 1
     fi
 }
@@ -98,8 +128,9 @@ show_menu() {
     fi
     
     echo -e "\n${GREEN}🎮 Choose your game mode:${NC}\n"
-    echo -e "${WHITE}1)${NC} ${GREEN}🚀 Full Game Experience${NC}"
+    echo -e "${WHITE}1)${NC} ${GREEN}🚀 Full Game Experience (Quick Setup)${NC}"
     echo -e "   Complete zkLabubuio game with real SP1 zero-knowledge proofs"
+    echo -e "   ${YELLOW}⚡ Auto-installs all dependencies and builds project${NC}"
     echo -e "   ${BLUE}Frontend:${NC} http://localhost:8080 ($frontend_status) | ${BLUE}Backend:${NC} http://localhost:3000 ($backend_status)\n"
     
     echo -e "${WHITE}2)${NC} ${YELLOW}🎯 Frontend Only (Demo Mode)${NC}"
@@ -121,17 +152,78 @@ show_menu() {
     echo -e "${WHITE}7)${NC} ${RED}❌ Exit${NC}\n"
 }
 
-# Start full game experience
+# Start full game experience with quick setup
 start_full_game() {
-    echo -e "${GREEN}🚀 Starting Full Game Experience...${NC}"
+    echo -e "${GREEN}🚀 Starting Full Game Experience (Quick Setup)...${NC}"
     echo -e "${BLUE}Frontend:${NC} http://localhost:8080"
     echo -e "${BLUE}Backend:${NC} http://localhost:3000"
     echo -e "${YELLOW}Note: SP1 proof logs will only be shown when you click the Prove button in game${NC}\n"
     
     cleanup_ports
     
-    # Start servers with minimal output
+    # Quick Setup: Install all dependencies and build
+    echo -e "${CYAN}🔧 Setting up dependencies (this may take a few minutes)...${NC}"
+    
+    # Install root dependencies
+    echo -e "${BLUE}Installing root dependencies...${NC}"
+    npm install >/dev/null 2>&1
+    
+    # Install backend dependencies
+    echo -e "${BLUE}Installing backend dependencies...${NC}"
+    cd backend && npm install >/dev/null 2>&1
+    cd ..
+    
+    # Install frontend dependencies
+    echo -e "${BLUE}Installing frontend dependencies...${NC}"
+    cd zklabubu_game && npm install >/dev/null 2>&1
+    cd www && npm install >/dev/null 2>&1
+    cd ../..
+    
+    # Build WASM package
+    echo -e "${BLUE}Building WASM package...${NC}"
+    cd zklabubu_game && npm run build >/dev/null 2>&1
+    cd ..
+    
+    # Check and install wasm-pack if needed
+    if ! command_exists wasm-pack; then
+        echo -e "${YELLOW}Installing wasm-pack...${NC}"
+        curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh >/dev/null 2>&1
+    fi
+    
+    # Check if SP1 toolchain is installed
+    if ! command_exists cargo-prove; then
+        echo -e "${YELLOW}Installing SP1 toolchain (this may take several minutes)...${NC}"
+        echo -e "${CYAN}Please wait while SP1 is being installed...${NC}"
+        
+        # Install SP1 toolchain
+        curl -L https://sp1up.succinct.xyz | bash >/dev/null 2>&1
+        
+        # Source the environment
+        if [ -f "$HOME/.sp1/env" ]; then
+            source "$HOME/.sp1/env"
+        fi
+        
+        # Update PATH
+        export PATH="$HOME/.sp1/bin:$PATH"
+        
+        # Run sp1up to install the toolchain
+        if [ -f "$HOME/.sp1/bin/sp1up" ]; then
+            "$HOME/.sp1/bin/sp1up" >/dev/null 2>&1
+        fi
+        
+        # Verify installation
+        if command_exists cargo-prove; then
+            echo -e "${GREEN}✅ SP1 toolchain installed successfully${NC}"
+        else
+            echo -e "${YELLOW}⚠️  SP1 installation may need manual completion${NC}"
+            echo -e "${CYAN}You can run 'npm run install:sp1' manually after the game starts${NC}"
+        fi
+    fi
+    
+    echo -e "${GREEN}✅ Quick setup completed successfully!${NC}"
     echo -e "${CYAN}Starting servers...${NC}"
+    
+    # Start servers with minimal output
     npm run dev >/dev/null 2>&1 &
     
     # Wait a bit for servers to start
@@ -299,31 +391,60 @@ stop_all_servers() {
     read -n 1
 }
 
-# Setup dependencies
+# Setup dependencies (manual installation)
 setup_dependencies() {
-    echo -e "${BLUE}🔧 Setting up dependencies...${NC}\n"
+    echo -e "${BLUE}🔧 Setting up dependencies manually...${NC}\n"
     
+    # Install root dependencies
+    echo -e "${CYAN}Installing root dependencies...${NC}"
+    npm install
+    
+    # Install backend dependencies
     echo -e "${CYAN}Installing backend dependencies...${NC}"
     cd backend && npm install
-    
-    echo -e "${CYAN}Installing frontend dependencies...${NC}"
-    cd ../zklabubu_game/www && npm install
-    
-    echo -e "${CYAN}Building WASM package...${NC}"
-    cd .. && npm run build
-    
     cd ..
     
+    # Install frontend dependencies
+    echo -e "${CYAN}Installing frontend dependencies...${NC}"
+    cd zklabubu_game && npm install
+    cd www && npm install
+    cd ../..
+    
+    # Build WASM package
+    echo -e "${CYAN}Building WASM package...${NC}"
+    cd zklabubu_game && npm run build
+    cd ..
+    
+    # Check and install wasm-pack if needed
+    if ! command_exists wasm-pack; then
+        echo -e "${YELLOW}Installing wasm-pack...${NC}"
+        curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+    fi
+    
+    # Check if SP1 toolchain is installed
+    if ! command_exists cargo-prove; then
+        echo -e "${YELLOW}Installing SP1 toolchain...${NC}"
+        npm run install:sp1
+        
+        # Source the environment
+        if [ -f "$HOME/.sp1/env" ]; then
+            source "$HOME/.sp1/env"
+        fi
+        
+        # Update PATH
+        export PATH="$HOME/.sp1/bin:$PATH"
+        
+        echo -e "${GREEN}✅ SP1 toolchain installed${NC}"
+    fi
+    
     echo -e "\n${GREEN}✅ All dependencies installed successfully!${NC}"
+    echo -e "${CYAN}You can now use Option 1 to start the full game experience${NC}"
     echo -e "${BLUE}Press any key to return to menu...${NC}"
     read -n 1
 }
 
 # Main execution
 main() {
-    # Silent dependency check
-    check_dependencies
-    
     while true; do
         show_menu
         echo -n -e "${WHITE}Please enter your choice (1-7): ${NC}"
@@ -332,18 +453,28 @@ main() {
         
         case $choice in
             1)
+                # Only check basic dependencies for quick setup
+                check_basic_dependencies
                 start_full_game
                 ;;
             2)
+                # Check all dependencies for frontend only
+                check_all_dependencies
                 start_frontend_only
                 ;;
             3)
+                # Check all dependencies for SP1 testing
+                check_all_dependencies
                 test_sp1_system
                 ;;
             4)
+                # Check all dependencies for proof generation
+                check_all_dependencies
                 generate_real_proof
                 ;;
             5)
+                # Basic dependencies needed for setup
+                check_basic_dependencies
                 setup_dependencies
                 ;;
             6)
